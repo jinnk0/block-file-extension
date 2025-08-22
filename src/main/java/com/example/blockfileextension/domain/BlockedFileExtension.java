@@ -1,12 +1,9 @@
 package com.example.blockfileextension.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import jakarta.persistence.Id;
 
 @Entity
 @Getter
@@ -19,6 +16,7 @@ public class BlockedFileExtension {
 
     private String extension;
 
+    @Enumerated(EnumType.STRING)
     private ExtensionType extensionType;
 
     private boolean isBlocked;

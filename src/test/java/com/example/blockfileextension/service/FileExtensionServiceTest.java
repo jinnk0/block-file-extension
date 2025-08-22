@@ -6,6 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.Arrays;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -23,7 +27,7 @@ public class FileExtensionServiceTest {
 
     @Test
     void 커스텀_확장자를_추가한다() {
-        String extension = "exe";
+        String extension = "sh";
 
         BlockedFileExtension addedExtension = fileExtensionService.addCustomExtension(extension);
 
@@ -33,18 +37,33 @@ public class FileExtensionServiceTest {
 
     @Test
     void 차단된_확장자는_거부한다() {
-        String extension = "exe";
+        String extension = "sh";
         BlockedFileExtension addedExtension = fileExtensionService.addCustomExtension(extension);
-        boolean result = fileExtensionService.isAllowedExtension("exe");
+        boolean result = fileExtensionService.isAllowedExtension("sh");
         assertFalse(result);
     }
 
     @Test
     void 추가된_커스텀_확장자_중복_추가_시_예외_처리() {
-        String extension = "exe";
+        String extension = "sh";
         BlockedFileExtension addedExtension = fileExtensionService.addCustomExtension(extension);
         assertThrows(IllegalArgumentException.class, () ->
                 fileExtensionService.addCustomExtension(extension)
         );
+    }
+
+    @Test
+    void 체크되지_않은_고정_확장자_리스트를_반환한다() {
+        // DB에 사전 등록해둔 고정 확장자 리스트
+        List<String> expected_value = Arrays.asList("bat", "cmd", "com", "cpl", "exe", "scr", "js");
+
+        List<BlockedFileExtension> actual_value = fileExtensionService.getFixExtension();
+        assertThat(actual_value).hasSize(expected_value.size());
+
+        // 체크되지 않았는지 확인
+        assertThat(actual_value).extracting(BlockedFileExtension::isBlocked).doesNotContain(true);
+        // 고정 확장자를 제대로 반환하는지 확인
+        assertThat(actual_value).extracting(BlockedFileExtension::getExtension)
+                                .containsExactlyInAnyOrderElementsOf(expected_value);
     }
 }

@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -24,5 +26,9 @@ public class FileExtensionService {
         }
         BlockedFileExtension addedExtension = new BlockedFileExtension(ext, ExtensionType.CUSTOM, true);
         return blockedFileExtensionRepository.save(addedExtension);
+    }
+
+    public List<BlockedFileExtension> getFixExtension() {
+        return blockedFileExtensionRepository.findByExtensionType(ExtensionType.FIX);
     }
 }
