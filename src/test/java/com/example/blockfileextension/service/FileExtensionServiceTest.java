@@ -30,4 +30,12 @@ public class FileExtensionServiceTest {
         assertNotNull(addedExtension.getId());
         assertEquals(extension, addedExtension.getExtension());
     }
+
+    @Test
+    void 차단된_확장자는_거부한다() {
+        String extension = "exe";
+        BlockedFileExtension addedExtension = fileExtensionService.addCustomExtension(extension);
+        boolean result = fileExtensionService.isAllowedExtension("exe");
+        assertFalse(result);
+    }
 }
