@@ -19,7 +19,13 @@ public class BlockedFileExtension {
 
     private String extension;
 
-    public BlockedFileExtension(String extension) {
+    private ExtensionType extensionType;
+
+    private boolean isBlocked;
+
+    public BlockedFileExtension(String extension, ExtensionType type, boolean isBlocked) {
         this.extension = extension.toLowerCase();
+        this.extensionType = type;
+        this.isBlocked = isBlocked;
     }
 }

@@ -2,6 +2,7 @@ package com.example.blockfileextension.service;
 
 import com.example.blockfileextension.domain.BlockedFileExtension;
 import com.example.blockfileextension.domain.BlockedFileExtensionRepository;
+import com.example.blockfileextension.domain.ExtensionType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +22,7 @@ public class FileExtensionService {
         if (blockedFileExtensionRepository.existsByExtension(ext)) {
             throw new IllegalArgumentException("이미 존재하는 확장자입니다.");
         }
-        BlockedFileExtension addedExtension = new BlockedFileExtension(ext);
+        BlockedFileExtension addedExtension = new BlockedFileExtension(ext, ExtensionType.CUSTOM, true);
         return blockedFileExtensionRepository.save(addedExtension);
     }
 }
