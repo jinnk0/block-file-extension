@@ -36,9 +36,15 @@ public class FileExtensionService {
     }
 
     public BlockedFileExtension changeStatus(String extension, boolean isBlocked) {
-        BlockedFileExtension blockedFileExtension = blockedFileExtensionRepository
-                .findByExtension(extension).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 확장자입니다."));
+        BlockedFileExtension blockedFileExtension = blockedFileExtensionRepository.findByExtension(extension)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 확장자입니다."));
         blockedFileExtension.setIsBlocked(isBlocked);
         return blockedFileExtension;
+    }
+
+    public void deleteCustomExtension(String extension) {
+        BlockedFileExtension bfe = blockedFileExtensionRepository.findByExtension(extension)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 확장자입니다."));
+        blockedFileExtensionRepository.delete(bfe);
     }
 }

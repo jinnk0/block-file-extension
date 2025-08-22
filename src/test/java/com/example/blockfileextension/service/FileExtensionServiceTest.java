@@ -54,7 +54,7 @@ public class FileExtensionServiceTest {
     }
 
     @Test
-    void 체크되지_않은_고정_확장자_리스트를_반환한다() {
+    void 시작_시_체크되지_않은_고정_확장자_리스트를_반환한다() {
         // DB에 사전 등록해둔 고정 확장자 리스트
         List<String> expected_value = Arrays.asList("bat", "cmd", "com", "cpl", "exe", "scr", "js");
 
@@ -89,5 +89,14 @@ public class FileExtensionServiceTest {
         assertThrows(IllegalArgumentException.class, () ->
                 fileExtensionService.addCustomExtension(extension)
         );
+    }
+
+    @Test
+    void 커스텀_확장자를_삭제한다() {
+        String extension = "sh";
+        BlockedFileExtension addedExtension = fileExtensionService.addCustomExtension(extension);
+        fileExtensionService.deleteCustomExtension(extension);
+        boolean result = fileExtensionService.isAllowedExtension(extension);
+        assertTrue(result);
     }
 }
