@@ -18,4 +18,8 @@ public class BlockedFileExtension {
     private Long id;
 
     private String extension;
+
+    public BlockedFileExtension(String extension) {
+        this.extension = extension.toLowerCase();
+    }
 }

@@ -1,11 +1,12 @@
 package com.example.blockfileextension.service;
 
+import com.example.blockfileextension.domain.BlockedFileExtension;
 import org.springframework.transaction.annotation.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
@@ -18,5 +19,15 @@ public class FileExtensionServiceTest {
     void 차단되지_않은_확장자는_허용한다() {
         boolean result = fileExtensionService.isAllowedExtension("jpg");
         assertTrue(result);
+    }
+
+    @Test
+    void 커스텀_확장자를_추가한다() {
+        String extension = "exe";
+
+        BlockedFileExtension addedExtension = fileExtensionService.addCustomExtension(extension);
+
+        assertNotNull(addedExtension.getId());
+        assertEquals(extension, addedExtension.getExtension());
     }
 }
