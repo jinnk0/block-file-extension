@@ -26,4 +26,8 @@ public class BlockedFileExtension {
         this.extensionType = type;
         this.isBlocked = isBlocked;
     }
+
+    public void setIsBlocked(boolean isBlocked) {
+        this.isBlocked = isBlocked;
+    }
 }

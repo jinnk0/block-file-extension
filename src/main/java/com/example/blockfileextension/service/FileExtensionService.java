@@ -31,4 +31,11 @@ public class FileExtensionService {
     public List<BlockedFileExtension> getFixExtension() {
         return blockedFileExtensionRepository.findByExtensionType(ExtensionType.FIX);
     }
+
+    public BlockedFileExtension changeStatus(String extension, boolean isBlocked) {
+        BlockedFileExtension blockedFileExtension = blockedFileExtensionRepository
+                .findByExtension(extension).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 확장자입니다."));
+        blockedFileExtension.setIsBlocked(isBlocked);
+        return blockedFileExtension;
+    }
 }

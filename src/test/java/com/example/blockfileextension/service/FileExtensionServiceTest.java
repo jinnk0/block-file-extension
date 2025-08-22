@@ -66,4 +66,19 @@ public class FileExtensionServiceTest {
         assertThat(actual_value).extracting(BlockedFileExtension::getExtension)
                                 .containsExactlyInAnyOrderElementsOf(expected_value);
     }
+
+    @Test
+    void 고정_확장자_체크_시_DB에_저장된다() {
+        String extension = "bat";
+        BlockedFileExtension entity = fileExtensionService.changeStatus(extension, true);
+        assertTrue(entity.isBlocked());
+    }
+
+    @Test
+    void 고정_확장자_체크해제_시_DB에_저장된다() {
+        String extension = "bat";
+        BlockedFileExtension chekced_entity = fileExtensionService.changeStatus(extension, true);
+        BlockedFileExtension unchecked_entity = fileExtensionService.changeStatus(extension, false);
+        assertFalse(unchecked_entity.isBlocked());
+    }
 }
