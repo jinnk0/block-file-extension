@@ -35,3 +35,12 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# H2 DB 파일
+*.h2.db
+*.mv.db
+*.trace.db
+
+# 스프링 부트 설정
+application-local.yaml
+application-prod.yaml
