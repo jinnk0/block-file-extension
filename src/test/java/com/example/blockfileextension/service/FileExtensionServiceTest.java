@@ -1,6 +1,7 @@
 package com.example.blockfileextension.service;
 
 import com.example.blockfileextension.domain.BlockedFileExtension;
+import org.springframework.cglib.core.Block;
 import org.springframework.transaction.annotation.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,5 +81,13 @@ public class FileExtensionServiceTest {
         BlockedFileExtension chekced_entity = fileExtensionService.changeStatus(extension, true);
         BlockedFileExtension unchecked_entity = fileExtensionService.changeStatus(extension, false);
         assertFalse(unchecked_entity.isBlocked());
+    }
+
+    @Test
+    void 확장자_최대_입력_길이는_20자리() {
+        String extension = "abcdefghijklmnopqrstuvwxyz";
+        assertThrows(IllegalArgumentException.class, () ->
+                fileExtensionService.addCustomExtension(extension)
+        );
     }
 }
