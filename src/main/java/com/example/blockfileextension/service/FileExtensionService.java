@@ -27,6 +27,9 @@ public class FileExtensionService {
         if (ext.length() > 20) {
             throw new IllegalArgumentException("확장자의 입력 길이가 20자를 넘었습니다.");
         }
+        if (blockedFileExtensionRepository.findByExtensionType(ExtensionType.CUSTOM).size() >= 200) {
+            throw new IllegalArgumentException("확장자의 개수가 200개를 넘었습니다.");
+        }
         BlockedFileExtension addedExtension = new BlockedFileExtension(ext, ExtensionType.CUSTOM, true);
         return blockedFileExtensionRepository.save(addedExtension);
     }

@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.stream;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -98,5 +99,18 @@ public class FileExtensionServiceTest {
         fileExtensionService.deleteCustomExtension(extension);
         boolean result = fileExtensionService.isAllowedExtension(extension);
         assertTrue(result);
+    }
+
+    @Test
+    void 커스텀_확장자는_200개까지_추가할_수_있다() {
+        // 커스텀 확장자 200개 추가
+        for (int i = 0; i < 200; i++) {
+            BlockedFileExtension addedExtension = fileExtensionService.addCustomExtension(String.valueOf(i));
+        }
+        // 201번째 커스텀 확장자 추가 시 예외 발생
+        String extension = "sh";
+        assertThrows(IllegalArgumentException.class, () ->
+                fileExtensionService.addCustomExtension(extension)
+        );
     }
 }
