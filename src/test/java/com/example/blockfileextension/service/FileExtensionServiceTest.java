@@ -38,4 +38,13 @@ public class FileExtensionServiceTest {
         boolean result = fileExtensionService.isAllowedExtension("exe");
         assertFalse(result);
     }
+
+    @Test
+    void 추가된_커스텀_확장자_중복_추가_시_예외_처리() {
+        String extension = "exe";
+        BlockedFileExtension addedExtension = fileExtensionService.addCustomExtension(extension);
+        assertThrows(IllegalArgumentException.class, () ->
+                fileExtensionService.addCustomExtension(extension)
+        );
+    }
 }
