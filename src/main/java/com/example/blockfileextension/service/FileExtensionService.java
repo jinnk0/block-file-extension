@@ -50,6 +50,7 @@ public class FileExtensionService {
             throw new IllegalArgumentException("확장자의 개수가 200개를 넘었습니다.");
         }
         BlockedFileExtension addedExtension = new BlockedFileExtension(ext, ExtensionType.CUSTOM, true);
+        addCount(ext);
         return blockedFileExtensionRepository.save(addedExtension);
     }
 
@@ -65,6 +66,9 @@ public class FileExtensionService {
         BlockedFileExtension blockedFileExtension = blockedFileExtensionRepository.findByExtension(extension)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 확장자입니다."));
         blockedFileExtension.setIsBlocked(isBlocked);
+        if (isBlocked) {
+            addCount(extension);
+        }
         return blockedFileExtension;
     }
 
@@ -176,5 +180,19 @@ public class FileExtensionService {
                 blockedFileExtensionRepository.save(newFixedExtension);
             }
         }
+    }
+
+    /**
+     * 확장자 추가 빈도 업데이트
+     * 이미 있을 경우 빈도수 + 1
+     * 없을 경우 새롭게 생성
+     *
+     * @param extension 업데이트할 확장자 이름
+     * */
+    public void addCount(String extension) {
+        ExtensionFrequency extensionFrequency = extensionFrequencyRepository.findByExtension(extension)
+                .orElse(new ExtensionFrequency(extension, 0));
+        extensionFrequency.setAddedCount();
+        extensionFrequencyRepository.save(extensionFrequency);
     }
 }

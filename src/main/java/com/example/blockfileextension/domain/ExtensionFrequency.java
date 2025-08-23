@@ -25,4 +25,8 @@ public class ExtensionFrequency {
         this.extension = extension;
         this.addedCount = addedCount;
     }
+
+    public void setAddedCount() {
+        this.addedCount += 1;
+    }
 }
