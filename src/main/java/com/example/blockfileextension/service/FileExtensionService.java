@@ -3,6 +3,8 @@ package com.example.blockfileextension.service;
 import com.example.blockfileextension.domain.BlockedFileExtension;
 import com.example.blockfileextension.domain.BlockedFileExtensionRepository;
 import com.example.blockfileextension.domain.ExtensionType;
+import com.example.blockfileextension.dto.FileExtensions;
+import com.example.blockfileextension.dto.FixExtension;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,5 +51,19 @@ public class FileExtensionService {
         BlockedFileExtension bfe = blockedFileExtensionRepository.findByExtension(extension)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 확장자입니다."));
         blockedFileExtensionRepository.delete(bfe);
+    }
+
+    public FileExtensions getExtensions() {
+        List<BlockedFileExtension> fixedEntities = blockedFileExtensionRepository.findByExtensionType(ExtensionType.FIX);
+        List<BlockedFileExtension> customEntities = blockedFileExtensionRepository.findByExtensionType(ExtensionType.CUSTOM);
+
+        List<FixExtension> fixExtensions = fixedEntities.stream()
+                .map(entity -> new FixExtension(entity.getExtension(), entity.isBlocked()))
+                .toList();
+        List<String> customExtensions = customEntities.stream()
+                .map(BlockedFileExtension::getExtension)
+                .toList();
+
+        return new FileExtensions(fixExtensions, customExtensions);
     }
 }

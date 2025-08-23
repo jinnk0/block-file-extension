@@ -1,7 +1,6 @@
 package com.example.blockfileextension.service;
 
 import com.example.blockfileextension.domain.BlockedFileExtension;
-import org.springframework.cglib.core.Block;
 import org.springframework.transaction.annotation.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +10,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.InstanceOfAssertFactories.stream;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
