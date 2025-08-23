@@ -72,12 +72,16 @@ public class FileExtensionService {
      * 커스텀 확장자 삭제
      *
      * @param extension 삭제하려는 커스텀 확장자 이름
-     * @throws IllegalArgumentException 해당 확장자가 존재하지 않는 경우
+     * @throws IllegalArgumentException 해당 확장자가 존재하지 않는 경우, 커스텀 확장자가 아닌 경우
      * */
     public void deleteCustomExtension(String extension) {
         BlockedFileExtension bfe = blockedFileExtensionRepository.findByExtension(extension)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 확장자입니다."));
-        blockedFileExtensionRepository.delete(bfe);
+        if (bfe.getExtensionType().equals(ExtensionType.FIX)) {
+            throw new IllegalArgumentException("고정 확장자는 삭제할 수 없습니다.");
+        } else {
+            blockedFileExtensionRepository.delete(bfe);
+        }
     }
 
     /**
