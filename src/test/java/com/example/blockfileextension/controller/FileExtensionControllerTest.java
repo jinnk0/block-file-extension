@@ -1,6 +1,7 @@
 package com.example.blockfileextension.controller;
 
 import com.example.blockfileextension.domain.BlockedFileExtension;
+import com.example.blockfileextension.dto.CustomExtension;
 import com.example.blockfileextension.dto.FixExtension;
 import com.example.blockfileextension.service.FileExtensionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,8 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -58,6 +58,26 @@ public class FileExtensionControllerTest {
         mvc.perform(patch("/files/extensions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(extensionToUpdate)))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void 커스텀_확장자를_추가한다() throws Exception {
+        CustomExtension customExtension = new CustomExtension("sh", true);
+
+        mvc.perform(post("/files/extensions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(customExtension)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.extension").value("sh"))
+                .andExpect(jsonPath("$.isBlocked").value(true));
+    }
+
+    @Test
+    void 커스텀_확장자를_삭제한다() throws Exception {
+        String extensionToDelete = "exe";
+
+        mvc.perform(delete("/files/extensions/{extension}", extensionToDelete))
                 .andExpect(status().isNoContent());
     }
 
