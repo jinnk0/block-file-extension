@@ -5,6 +5,7 @@ import com.example.blockfileextension.dto.FileExtensions;
 import com.example.blockfileextension.dto.FileValidation;
 import com.example.blockfileextension.dto.FixExtension;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -138,8 +139,9 @@ public class FileExtensionService {
 
     /**
      * 확장자 추가 빈도수에 따라 고정 확장자 업데이트
-     *
+     * 1시간마다 주기적으로 실행
      * */
+    @Scheduled(fixedRate = 60 * 60 * 1000)
     public void updateFixExtensions() {
         List<String> newFixExtensions = extensionFrequencyRepository.findTop7ByOrderByAddedCountDesc()
                 .stream().map(ExtensionFrequency::getExtension).toList();
