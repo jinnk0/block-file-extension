@@ -1,9 +1,6 @@
 package com.example.blockfileextension.service;
 
-import com.example.blockfileextension.domain.BlockedFileExtension;
-import com.example.blockfileextension.domain.BlockedFileExtensionRepository;
-import com.example.blockfileextension.domain.ExtensionType;
-import com.example.blockfileextension.domain.Result;
+import com.example.blockfileextension.domain.*;
 import com.example.blockfileextension.dto.FileExtensions;
 import com.example.blockfileextension.dto.FileValidation;
 import com.example.blockfileextension.dto.FixExtension;
@@ -20,6 +17,7 @@ import java.util.List;
 public class FileExtensionService {
 
     private final BlockedFileExtensionRepository blockedFileExtensionRepository;
+    private final ExtensionFrequencyRepository extensionFrequencyRepository;
 
     public boolean isAllowedExtension(String ext) {
         return blockedFileExtensionRepository
@@ -84,5 +82,47 @@ public class FileExtensionService {
         }
 
         return new FileValidation(Result.ALLOWED, "차단되지 않은 확장자");
+    }
+
+    public void updateFixExtensions() {
+        List<String> newFixExtensions = extensionFrequencyRepository.findTop7ByOrderByAddedCountDesc()
+                .stream().map(ExtensionFrequency::getExtension).toList();
+        List<String> currFixExtensions = blockedFileExtensionRepository.findByExtensionType(ExtensionType.FIX)
+                .stream().map(BlockedFileExtension::getExtension).toList();
+
+        // 기존과 새로 선정된 확장자의 겹치는 개수
+        long sameCount = newFixExtensions.stream()
+                .filter(currFixExtensions::contains)
+                .count();
+
+        // 새로 추가해야 하는 고정 확장자 수
+        int newFixCount = 7 - (int) sameCount;
+
+        List<String> currFixExtensionsDesc = extensionFrequencyRepository.findByExtensionInOrderByAddedCountDesc(currFixExtensions)
+                .stream().map(ExtensionFrequency::getExtension).toList();
+
+        List<String> toRemove = currFixExtensionsDesc
+                .subList(currFixExtensionsDesc.size() - newFixCount, currFixExtensionsDesc.size());
+
+        for (String ext : toRemove) {
+            BlockedFileExtension bfe = blockedFileExtensionRepository.findByExtension(ext)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않은 확장자입니다."));
+            if (bfe.isBlocked()) {
+                bfe.setExtensionType(ExtensionType.CUSTOM);
+            } else {
+                blockedFileExtensionRepository.delete(bfe);
+            }
+        }
+
+        for (String newExt : newFixExtensions) {
+            BlockedFileExtension bfe = blockedFileExtensionRepository.findByExtension(newExt).orElse(null);
+
+            if (bfe != null) {
+                bfe.setExtensionType(ExtensionType.FIX);
+            } else {
+                BlockedFileExtension newFixedExtension = new BlockedFileExtension(newExt, ExtensionType.FIX, false);
+                blockedFileExtensionRepository.save(newFixedExtension);
+            }
+        }
     }
 }

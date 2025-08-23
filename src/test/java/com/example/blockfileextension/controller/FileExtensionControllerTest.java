@@ -1,10 +1,11 @@
 package com.example.blockfileextension.controller;
 
-import com.example.blockfileextension.domain.BlockedFileExtension;
+import com.example.blockfileextension.domain.*;
 import com.example.blockfileextension.dto.CustomExtension;
 import com.example.blockfileextension.dto.FixExtension;
 import com.example.blockfileextension.service.FileExtensionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -12,6 +13,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -26,17 +29,58 @@ public class FileExtensionControllerTest {
     private MockMvc mvc;
 
     @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
     private FileExtensionService fileExtensionService;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private BlockedFileExtensionRepository blockedFileExtensionRepository;
+
+    @Autowired
+    private ExtensionFrequencyRepository extensionFrequencyRepository;
+
+    @BeforeEach
+    void setUp() {
+        fileExtensionService = new FileExtensionService(blockedFileExtensionRepository, extensionFrequencyRepository);
+
+        // 기존 데이터 삭제
+        blockedFileExtensionRepository.deleteAll();
+        extensionFrequencyRepository.deleteAll();
+
+        // 초기 FIX 확장자 데이터: isBlocked true/false 섞음
+        List<BlockedFileExtension> fixedExtensions = List.of(
+                new BlockedFileExtension("bat", ExtensionType.FIX, false),
+                new BlockedFileExtension("cmd", ExtensionType.FIX, true),
+                new BlockedFileExtension("com", ExtensionType.FIX, false),
+                new BlockedFileExtension("cpl", ExtensionType.FIX, true),
+                new BlockedFileExtension("exe", ExtensionType.FIX, false),
+                new BlockedFileExtension("scr", ExtensionType.FIX, true),
+                new BlockedFileExtension("js", ExtensionType.FIX, false),
+                new BlockedFileExtension("txt", ExtensionType.CUSTOM, true)
+        );
+        blockedFileExtensionRepository.saveAll(fixedExtensions);
+
+        // 초기 ExtensionFrequency 데이터
+        List<ExtensionFrequency> frequencies = List.of(
+                new ExtensionFrequency("bat", 1),
+                new ExtensionFrequency("cmd", 0),
+                new ExtensionFrequency("com", 2),
+                new ExtensionFrequency("cpl", 4),
+                new ExtensionFrequency("exe", 10),
+                new ExtensionFrequency("scr", 6),
+                new ExtensionFrequency("js", 10),
+                new ExtensionFrequency("zip", 80),
+                new ExtensionFrequency("tar", 70),
+                new ExtensionFrequency("gz", 60),
+                new ExtensionFrequency("txt", 50),
+                new ExtensionFrequency("doc", 40)
+        );
+        extensionFrequencyRepository.saveAll(frequencies);
+    }
 
     @Test
     void 확장자_리스트를_반환한다() throws Exception {
-
-        // 테스트용 커스텀 확장자 추가
-        BlockedFileExtension addedExtension = fileExtensionService.addCustomExtension("sh");
-
         mvc.perform(get("/files/extensions").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.fixExtensions", containsInAnyOrder(
@@ -49,12 +93,12 @@ public class FileExtensionControllerTest {
                         hasEntry("extension", "js")
 
                 )))
-                .andExpect(jsonPath("$.customExtensions", containsInAnyOrder("sh")));
+                .andExpect(jsonPath("$.customExtensions", containsInAnyOrder("txt")));
     }
 
     @Test
     void 고정_확장자_체크_상태를_변경한다() throws Exception {
-        FixExtension extensionToUpdate = new FixExtension("exe", true);
+        FixExtension extensionToUpdate = new FixExtension("cmd", true);
 
         mvc.perform(patch("/files/extensions")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -76,7 +120,7 @@ public class FileExtensionControllerTest {
 
     @Test
     void 커스텀_확장자를_삭제한다() throws Exception {
-        String extensionToDelete = "exe";
+        String extensionToDelete = "txt";
 
         mvc.perform(delete("/files/extensions/{extension}", extensionToDelete))
                 .andExpect(status().isNoContent());
@@ -84,10 +128,8 @@ public class FileExtensionControllerTest {
 
     @Test
     void 차단된_확장자면_파일_업로드_실패() throws Exception {
-        BlockedFileExtension entity = fileExtensionService.changeStatus("exe", true);
-
         MockMultipartFile blockedFile =
-                new MockMultipartFile("file", "virus.exe", "application/octet-stream", "dummy".getBytes());
+                new MockMultipartFile("file", "virus.cmd", "application/octet-stream", "dummy".getBytes());
 
         mvc.perform(multipart("/files").file(blockedFile))
                 .andExpect(status().isOk())

@@ -30,4 +30,8 @@ public class BlockedFileExtension {
     public void setIsBlocked(boolean isBlocked) {
         this.isBlocked = isBlocked;
     }
+
+    public void setExtensionType(ExtensionType type) {
+        this.extensionType = type;
+    }
 }
