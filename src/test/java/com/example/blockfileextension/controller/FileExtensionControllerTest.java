@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.*;
@@ -79,6 +80,41 @@ public class FileExtensionControllerTest {
 
         mvc.perform(delete("/files/extensions/{extension}", extensionToDelete))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void 차단된_확장자면_파일_업로드_실패() throws Exception {
+        BlockedFileExtension entity = fileExtensionService.changeStatus("exe", true);
+
+        MockMultipartFile blockedFile =
+                new MockMultipartFile("file", "virus.exe", "application/octet-stream", "dummy".getBytes());
+
+        mvc.perform(multipart("/files").file(blockedFile))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("BLOCKED"));
+    }
+
+    @Test
+    void 차단되지_않은_확장자면_파일_업로드_성공() throws Exception {
+        MockMultipartFile blockedFile =
+                new MockMultipartFile("file", "safe.exe", "application/octet-stream", "dummy".getBytes());
+
+        mvc.perform(multipart("/files").file(blockedFile))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("ALLOWED"));
+    }
+
+    @Test
+    void 이중_확장자_처리_성공() throws Exception {
+        // 테스트용 이중 확장자 추가
+        BlockedFileExtension addedExtension = fileExtensionService.addCustomExtension("tar.gz");
+
+        MockMultipartFile blockedFile =
+                new MockMultipartFile("file", "virus.tar.gz", "application/octet-stream", "dummy".getBytes());
+
+        mvc.perform(multipart("/files").file(blockedFile))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("BLOCKED"));
     }
 
 }

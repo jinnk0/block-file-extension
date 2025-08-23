@@ -3,12 +3,15 @@ package com.example.blockfileextension.service;
 import com.example.blockfileextension.domain.BlockedFileExtension;
 import com.example.blockfileextension.domain.BlockedFileExtensionRepository;
 import com.example.blockfileextension.domain.ExtensionType;
+import com.example.blockfileextension.domain.Result;
 import com.example.blockfileextension.dto.FileExtensions;
+import com.example.blockfileextension.dto.FileValidation;
 import com.example.blockfileextension.dto.FixExtension;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -19,7 +22,10 @@ public class FileExtensionService {
     private final BlockedFileExtensionRepository blockedFileExtensionRepository;
 
     public boolean isAllowedExtension(String ext) {
-        return blockedFileExtensionRepository.findByExtension(ext.toLowerCase()).isEmpty();
+        return blockedFileExtensionRepository
+                .findByExtension(ext.toLowerCase())
+                .map(bfe -> !bfe.isBlocked())
+                .orElse(true);
     }
 
     public BlockedFileExtension addCustomExtension(String ext) {
@@ -65,5 +71,18 @@ public class FileExtensionService {
                 .toList();
 
         return new FileExtensions(fixExtensions, customExtensions);
+    }
+
+    public FileValidation validateFile(String filename) {
+        String[] extensions = filename.split("\\.");
+
+        for (int i = 1; i < extensions.length; i++) {
+            String extension = String.join(".", Arrays.copyOfRange(extensions, i, extensions.length));
+            if (!isAllowedExtension(extension)) {
+                return new FileValidation(Result.BLOCKED, "차단된 확장자 " + extension);
+            }
+        }
+
+        return new FileValidation(Result.ALLOWED, "차단되지 않은 확장자");
     }
 }
