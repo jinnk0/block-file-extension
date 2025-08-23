@@ -159,16 +159,18 @@ public class FileExtensionService {
         List<String> currFixExtensionsDesc = extensionFrequencyRepository.findByExtensionInOrderByAddedCountDesc(currFixExtensions)
                 .stream().map(ExtensionFrequency::getExtension).toList();
 
-        List<String> toRemove = currFixExtensionsDesc
-                .subList(currFixExtensionsDesc.size() - newFixCount, currFixExtensionsDesc.size());
+        if (newFixCount > 0) {
+            int fromIndex = Math.max(currFixExtensionsDesc.size() - newFixCount, 0);
+            List<String> toRemove = currFixExtensionsDesc.subList(fromIndex, currFixExtensionsDesc.size());
 
-        for (String extension : toRemove) {
-            BlockedFileExtension bfe = blockedFileExtensionRepository.findByExtension(extension)
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않은 확장자입니다."));
-            if (bfe.isBlocked()) {
-                bfe.setExtensionType(ExtensionType.CUSTOM);
-            } else {
-                blockedFileExtensionRepository.delete(bfe);
+            for (String extension : toRemove) {
+                BlockedFileExtension bfe = blockedFileExtensionRepository.findByExtension(extension)
+                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않은 확장자입니다."));
+                if (bfe.isBlocked()) {
+                    bfe.setExtensionType(ExtensionType.CUSTOM);
+                } else {
+                    blockedFileExtensionRepository.delete(bfe);
+                }
             }
         }
 
