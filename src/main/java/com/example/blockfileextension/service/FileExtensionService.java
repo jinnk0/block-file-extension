@@ -22,12 +22,12 @@ public class FileExtensionService {
     /**
      * 주어진 확장자가 차단된 확장자인지 확인
      *
-     * @param ext 확인할 확장자 이름
+     * @param extension 확인할 확장자 이름
      * @return 허용 여부 (true: 허용, false: 차단)
      * */
-    public boolean isAllowedExtension(String ext) {
+    public boolean isAllowedExtension(String extension) {
         return blockedFileExtensionRepository
-                .findByExtension(ext.toLowerCase())
+                .findByExtension(extension.toLowerCase())
                 .map(bfe -> !bfe.isBlocked())
                 .orElse(true);
     }
@@ -35,22 +35,22 @@ public class FileExtensionService {
     /**
      * 커스텀 확장자 추가
      *
-     * @param ext 추가할 커스텀 확장자 이름
+     * @param extension 추가할 커스텀 확장자 이름
      * @return 추가된 확장자 객체
      * @throws IllegalArgumentException 중복 추가, 입력 제한 조건 초과
      * */
-    public BlockedFileExtension addCustomExtension(String ext) {
-        if (blockedFileExtensionRepository.existsByExtension(ext)) {
+    public BlockedFileExtension addCustomExtension(String extension) {
+        if (blockedFileExtensionRepository.existsByExtension(extension)) {
             throw new IllegalArgumentException("이미 존재하는 확장자입니다.");
         }
-        if (ext.length() > 20) {
+        if (extension.length() > 20) {
             throw new IllegalArgumentException("확장자의 입력 길이가 20자를 넘었습니다.");
         }
         if (blockedFileExtensionRepository.findByExtensionType(ExtensionType.CUSTOM).size() >= 200) {
             throw new IllegalArgumentException("확장자의 개수가 200개를 넘었습니다.");
         }
-        BlockedFileExtension addedExtension = new BlockedFileExtension(ext, ExtensionType.CUSTOM, true);
-        addCount(ext);
+        BlockedFileExtension addedExtension = new BlockedFileExtension(extension, ExtensionType.CUSTOM, true);
+        addCount(extension);
         return blockedFileExtensionRepository.save(addedExtension);
     }
 
@@ -160,8 +160,8 @@ public class FileExtensionService {
         List<String> toRemove = currFixExtensionsDesc
                 .subList(currFixExtensionsDesc.size() - newFixCount, currFixExtensionsDesc.size());
 
-        for (String ext : toRemove) {
-            BlockedFileExtension bfe = blockedFileExtensionRepository.findByExtension(ext)
+        for (String extension : toRemove) {
+            BlockedFileExtension bfe = blockedFileExtensionRepository.findByExtension(extension)
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않은 확장자입니다."));
             if (bfe.isBlocked()) {
                 bfe.setExtensionType(ExtensionType.CUSTOM);
@@ -170,13 +170,13 @@ public class FileExtensionService {
             }
         }
 
-        for (String newExt : newFixExtensions) {
-            BlockedFileExtension bfe = blockedFileExtensionRepository.findByExtension(newExt).orElse(null);
+        for (String newExtension : newFixExtensions) {
+            BlockedFileExtension bfe = blockedFileExtensionRepository.findByExtension(newExtension).orElse(null);
 
             if (bfe != null) {
                 bfe.setExtensionType(ExtensionType.FIX);
             } else {
-                BlockedFileExtension newFixedExtension = new BlockedFileExtension(newExt, ExtensionType.FIX, false);
+                BlockedFileExtension newFixedExtension = new BlockedFileExtension(newExtension, ExtensionType.FIX, false);
                 blockedFileExtensionRepository.save(newFixedExtension);
             }
         }
