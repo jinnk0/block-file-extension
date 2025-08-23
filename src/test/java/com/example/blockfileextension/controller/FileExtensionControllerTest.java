@@ -1,7 +1,9 @@
 package com.example.blockfileextension.controller;
 
 import com.example.blockfileextension.domain.BlockedFileExtension;
+import com.example.blockfileextension.dto.FixExtension;
 import com.example.blockfileextension.service.FileExtensionService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -11,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -23,6 +26,9 @@ public class FileExtensionControllerTest {
 
     @Autowired
     private FileExtensionService fileExtensionService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
     void 확장자_리스트를_반환한다() throws Exception {
@@ -43,6 +49,16 @@ public class FileExtensionControllerTest {
 
                 )))
                 .andExpect(jsonPath("$.customExtensions", containsInAnyOrder("sh")));
+    }
+
+    @Test
+    void 고정_확장자_체크_상태를_변경한다() throws Exception {
+        FixExtension extensionToUpdate = new FixExtension("exe", true);
+
+        mvc.perform(patch("/files/extensions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(extensionToUpdate)))
+                .andExpect(status().isNoContent());
     }
 
 }
