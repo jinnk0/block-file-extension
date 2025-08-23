@@ -19,6 +19,12 @@ public class FileExtensionService {
     private final BlockedFileExtensionRepository blockedFileExtensionRepository;
     private final ExtensionFrequencyRepository extensionFrequencyRepository;
 
+    /**
+     * 주어진 확장자가 차단된 확장자인지 확인
+     *
+     * @param ext 확인할 확장자 이름
+     * @return 허용 여부 (true: 허용, false: 차단)
+     * */
     public boolean isAllowedExtension(String ext) {
         return blockedFileExtensionRepository
                 .findByExtension(ext.toLowerCase())
@@ -26,6 +32,13 @@ public class FileExtensionService {
                 .orElse(true);
     }
 
+    /**
+     * 커스텀 확장자 추가
+     *
+     * @param ext 추가할 커스텀 확장자 이름
+     * @return 추가된 확장자 객체
+     * @throws IllegalArgumentException 중복 추가, 입력 제한 조건 초과
+     * */
     public BlockedFileExtension addCustomExtension(String ext) {
         if (blockedFileExtensionRepository.existsByExtension(ext)) {
             throw new IllegalArgumentException("이미 존재하는 확장자입니다.");
@@ -40,10 +53,14 @@ public class FileExtensionService {
         return blockedFileExtensionRepository.save(addedExtension);
     }
 
-    public List<BlockedFileExtension> getFixExtension() {
-        return blockedFileExtensionRepository.findByExtensionType(ExtensionType.FIX);
-    }
-
+    /**
+     * 고정 확장자의 체크 상태 변경
+     *
+     * @param extension 체크 상태를 변경하려는 고정 확장자 이름
+     * @param isBlocked 변경할 상태 (true: 차단, false: 허용)
+     * @return 체크 상태를 변경한 확장자 객체
+     * @throws IllegalArgumentException 해당 확장자가 존재하지 않는 경우
+     * */
     public BlockedFileExtension changeStatus(String extension, boolean isBlocked) {
         BlockedFileExtension blockedFileExtension = blockedFileExtensionRepository.findByExtension(extension)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 확장자입니다."));
@@ -51,12 +68,28 @@ public class FileExtensionService {
         return blockedFileExtension;
     }
 
+    /**
+     * 커스텀 확장자 삭제
+     *
+     * @param extension 삭제하려는 커스텀 확장자 이름
+     * @throws IllegalArgumentException 해당 확장자가 존재하지 않는 경우
+     * */
     public void deleteCustomExtension(String extension) {
         BlockedFileExtension bfe = blockedFileExtensionRepository.findByExtension(extension)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 확장자입니다."));
         blockedFileExtensionRepository.delete(bfe);
     }
 
+    /**
+     * 고정 확장자와 커스텀 확장자 목록 반환
+     * 고정 확장자의 체크 상태 포함
+     *
+     * @return FileExtension 객체
+     *         <ul>
+     *             <li>fixExtensions: 체크 상태를 포함한 고정 확장자 리스트</li>
+     *             <li>customExtensions: 커스텀 확장자 이름 리스트</li>
+     *         </ul>
+     * */
     public FileExtensions getExtensions() {
         List<BlockedFileExtension> fixedEntities = blockedFileExtensionRepository.findByExtensionType(ExtensionType.FIX);
         List<BlockedFileExtension> customEntities = blockedFileExtensionRepository.findByExtensionType(ExtensionType.CUSTOM);
@@ -71,6 +104,17 @@ public class FileExtensionService {
         return new FileExtensions(fixExtensions, customExtensions);
     }
 
+    /**
+     * 업로드하려는 파일 검증
+     * 파일의 확장자를 통해 업로드 가능 여부 반환
+     *
+     * @param filename 업로드하려고 하는 파일의 확장자를 포함한 이름
+     * @return FileValidation 객체
+     *         <ul>
+     *             <li>result: 검증 결과 (BLOCKED: 차단, ALLOWED: 허용)</li>
+     *             <li>reason: 차단된 확장자의 이름</li>
+     *         </ul>
+     * */
     public FileValidation validateFile(String filename) {
         String[] extensions = filename.split("\\.");
 
@@ -84,6 +128,10 @@ public class FileExtensionService {
         return new FileValidation(Result.ALLOWED, "차단되지 않은 확장자");
     }
 
+    /**
+     * 확장자 추가 빈도수에 따라 고정 확장자 업데이트
+     *
+     * */
     public void updateFixExtensions() {
         List<String> newFixExtensions = extensionFrequencyRepository.findTop7ByOrderByAddedCountDesc()
                 .stream().map(ExtensionFrequency::getExtension).toList();

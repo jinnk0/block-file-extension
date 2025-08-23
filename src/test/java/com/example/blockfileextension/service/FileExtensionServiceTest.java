@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -100,19 +99,6 @@ public class FileExtensionServiceTest {
         assertThrows(IllegalArgumentException.class, () ->
                 fileExtensionService.addCustomExtension("txt") // 이미 추가되어 있는 커스텀 확장자
         );
-    }
-
-    @Test
-    void 시작_시_체크되지_않은_고정_확장자_리스트를_반환한다() {
-        // DB에 사전 등록해둔 고정 확장자 리스트
-        List<String> expected_value = Arrays.asList("bat", "cmd", "com", "cpl", "exe", "scr", "js");
-
-        List<BlockedFileExtension> actual_value = fileExtensionService.getFixExtension();
-        assertThat(actual_value).hasSize(expected_value.size());
-
-        // 고정 확장자를 제대로 반환하는지 확인
-        assertThat(actual_value).extracting(BlockedFileExtension::getExtension)
-                                .containsExactlyInAnyOrderElementsOf(expected_value);
     }
 
     @Test
