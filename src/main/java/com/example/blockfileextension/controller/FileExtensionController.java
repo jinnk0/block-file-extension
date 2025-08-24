@@ -50,16 +50,9 @@ public class FileExtensionController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping
-    public ResponseEntity<FileValidation> uploadFile(@RequestParam("file") MultipartFile file) {
-        String originalFilename = Optional.ofNullable(file.getOriginalFilename())
-                .orElseThrow(() -> new IllegalArgumentException("업로드된 파일명이 없습니다."));
-        String filename = Paths.get(originalFilename)
-                .getFileName()
-                .toString()
-                .toLowerCase()
-                .trim();
-        FileValidation validation = fileExtensionService.validateFile(filename);
+    @PostMapping("/check")
+    public ResponseEntity<FileValidationResponse> validateFileExtension(@RequestBody FileValidationRequest request) {
+        FileValidationResponse validation = fileExtensionService.validateFile(request.getFilename());
         return ResponseEntity.ok(validation);
     }
 }
