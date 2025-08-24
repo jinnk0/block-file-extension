@@ -1,13 +1,19 @@
+# 빌드
+FROM gradle:8.14.3-jdk17 AS build
+
+WORKDIR /home/gradle/src
+
+COPY . .
+
+RUN gradle bootJar --no-daemon
+
+# 실행용 이미지
 FROM eclipse-temurin:17-jdk-alpine
 
 WORKDIR /app
 
-COPY . .
-
-RUN chmod +x ./gradlew
-
-RUN ./gradlew bootJar --no-daemon
+COPY --from=build /home/gradle/src/build/libs/block-file-extension-0.0.1-SNAPSHOT.jar app.jar
 
 ENV JAVA_OPTS=""
 
-CMD ["sh", "-c", "java $JAVA_OPTS -Dserver.port=$PORT -jar build/libs/block-file-extension.jar"]
+CMD ["sh", "-c", "java $JAVA_OPTS -Dserver.port=$PORT -jar /app/app.jar"]
