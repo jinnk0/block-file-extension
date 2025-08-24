@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>파일 확장자 관리</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        /* 가로 배치 + 영역 제한 */
+        .extensions-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            max-width: 600px;
+        }
+        .ext-item {
+            background: #f3f3f3;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+<h1>파일 확장자 관리</h1>
+
+<!-- 파일 업로드 -->
+<h2>파일 업로드</h2> <!-- (3) 제목 추가 -->
+<form id="uploadForm" enctype="multipart/form-data">
+    <input type="file" name="file" id="fileInput" />
+    <button type="button" onclick="uploadFile()">업로드</button>
+</form>
+
+<hr/>
+
+<!-- 고정 확장자 -->
+<h2>고정 확장자</h2>
+<div id="fixExtensionsBox" class="extensions-box">
+    <!-- JS로 렌더링 -->
+</div>
+
+<hr/>
+
+<!-- 사용자 정의 확장자 -->
+<h2>사용자 정의 확장자 (<span id="customCount"></span>/200)</h2> <!-- (6) 개수 표시 -->
+<input type="text" id="customExtensionInput" placeholder="확장자 입력"/>
+<button onclick="addCustomExtension()">추가</button>
+
+<!-- (4) 입력칸 아래쪽에 확장자가 보이도록 위치 변경 -->
+<div id="customExtensionsBox" class="extensions-box">
+    <!-- JS로 렌더링 -->
+</div>
+
+<script>
+    const apiBase = '/files/extensions';
+
+    // 초기 데이터 로드
+    async function loadExtensions() {
+        const res = await axios.get(apiBase);
+        const data = res.data;
+
+        // 고정 확장자 (가로 배치)
+        const fixBox = document.getElementById('fixExtensionsBox');
+        fixBox.innerHTML = '';
+        data.fixExtensions.forEach(ext => {
+            const span = document.createElement('span');
+            span.className = 'ext-item';
+            span.innerHTML = `
+                ${ext.extension}
+                <input type="checkbox" ${ext.isBlocked ? 'checked' : ''}
+                    onchange="toggleFixExtension('${ext.extension}', this.checked)" />
+            `;
+            fixBox.appendChild(span);
+        });
+
+        // 사용자 정의 확장자 (입력창 아래쪽)
+        const customBox = document.getElementById('customExtensionsBox');
+        customBox.innerHTML = '';
+        data.customExtensions.forEach(ext => {
+            const span = document.createElement('span');
+            span.className = 'ext-item';
+            span.innerHTML = `
+                ${ext}
+                <button onclick="deleteCustomExtension('${ext}')">삭제</button>
+            `;
+            customBox.appendChild(span);
+        });
+
+        // (6) 개수 표시
+        document.getElementById('customCount').textContent = data.customExtensions.length;
+    }
+
+    // 고정 확장자 차단 여부 변경
+    async function toggleFixExtension(extension, isBlocked) {
+        await axios.patch(apiBase, {
+            extension: extension,
+            isBlocked: isBlocked
+        });
+    }
+
+    // 사용자 정의 확장자 추가
+    async function addCustomExtension() {
+        const input = document.getElementById('customExtensionInput');
+        const extension = input.value.trim();
+        if (!extension) return;
+
+        try {
+            await axios.post(apiBase, { extension: extension });
+            input.value = '';
+            loadExtensions();
+        } catch (e) {
+            // (2) 예외 메시지 alert
+            alert(e.response?.data || '추가 중 오류 발생');
+        }
+    }
+
+    // 사용자 정의 확장자 삭제
+    async function deleteCustomExtension(extension) {
+        await axios.delete(`${apiBase}/${extension}`);
+        loadExtensions();
+    }
+
+    // 파일 업로드
+    async function uploadFile() {
+        const fileInput = document.getElementById('fileInput');
+        if (!fileInput.files.length) return;
+
+        const fileName = fileInput.files[0].name; // 파일 이름 추출
+
+        try {
+            const res = await axios.post('/files/check', {
+                filename: fileName
+            });
+            const validation = res.data;
+            alert(`검사 결과: ${validation.result} - ${validation.reason}`);
+        } catch (e) {
+            alert(e.response?.data || '파일 이름 전송 중 오류 발생');
+        }
+    }
+
+    // 페이지 로드 시 실행
+    loadExtensions();
+</script>
+</body>
+</html>
+
