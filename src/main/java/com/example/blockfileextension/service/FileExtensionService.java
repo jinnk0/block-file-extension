@@ -2,7 +2,7 @@ package com.example.blockfileextension.service;
 
 import com.example.blockfileextension.domain.*;
 import com.example.blockfileextension.dto.FileExtensions;
-import com.example.blockfileextension.dto.FileValidation;
+import com.example.blockfileextension.dto.FileValidationResponse;
 import com.example.blockfileextension.dto.FixExtension;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -124,17 +124,17 @@ public class FileExtensionService {
      *             <li>reason: 차단된 확장자의 이름</li>
      *         </ul>
      * */
-    public FileValidation validateFile(String filename) {
+    public FileValidationResponse validateFile(String filename) {
         String[] extensions = filename.split("\\.");
 
         for (int i = 1; i < extensions.length; i++) {
             String extension = String.join(".", Arrays.copyOfRange(extensions, i, extensions.length));
             if (!isAllowedExtension(extension)) {
-                return new FileValidation(Result.BLOCKED, "차단된 확장자 " + extension);
+                return new FileValidationResponse(Result.BLOCKED, "차단된 확장자 " + extension);
             }
         }
 
-        return new FileValidation(Result.ALLOWED, "차단되지 않은 확장자");
+        return new FileValidationResponse(Result.ALLOWED, "차단되지 않은 확장자");
     }
 
     /**

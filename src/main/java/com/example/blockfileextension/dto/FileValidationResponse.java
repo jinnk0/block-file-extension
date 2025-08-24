@@ -4,11 +4,11 @@ import com.example.blockfileextension.domain.Result;
 import lombok.Getter;
 
 @Getter
-public class FileValidation {
+public class FileValidationResponse {
     private Result result;
     private String reason;
 
-    public FileValidation(Result result, String reason) {
+    public FileValidationResponse(Result result, String reason) {
         this.result = result;
         this.reason = reason;
     }
