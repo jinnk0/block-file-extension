@@ -35,3 +35,4 @@
 - 화면 개발 : Thymeleaf
 - 배포 : Render
 ## 화면 설계
+<img width="748" height="516" alt="image" src="https://github.com/user-attachments/assets/4c090352-8b0a-423f-923d-8407842d0b05" />
