@@ -1,21 +1,13 @@
 package com.example.blockfileextension.controller;
 
 import com.example.blockfileextension.domain.BlockedFileExtension;
-import com.example.blockfileextension.dto.CustomExtension;
-import com.example.blockfileextension.dto.FileExtensions;
-import com.example.blockfileextension.dto.FileValidation;
-import com.example.blockfileextension.dto.FixExtension;
+import com.example.blockfileextension.dto.*;
 import com.example.blockfileextension.service.FileExtensionService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
-import java.nio.file.Paths;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/files")
