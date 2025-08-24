@@ -8,5 +8,5 @@ import java.util.Optional;
 public interface BlockedFileExtensionRepository extends JpaRepository<BlockedFileExtension, Long> {
     Optional<BlockedFileExtension> findByExtension(String extension);
     boolean existsByExtension(String extension);
-    List<BlockedFileExtension> findByExtensionType(ExtensionType type);
+    List<BlockedFileExtension> findByExtensionTypeOrderByIdAsc(ExtensionType type);
 }

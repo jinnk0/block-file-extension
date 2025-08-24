@@ -47,7 +47,7 @@ public class FileExtensionService {
         if (extension.length() > 20) {
             throw new IllegalArgumentException("확장자의 입력 길이가 20자를 넘었습니다.");
         }
-        if (blockedFileExtensionRepository.findByExtensionType(ExtensionType.CUSTOM).size() >= 200) {
+        if (blockedFileExtensionRepository.findByExtensionTypeOrderByIdAsc(ExtensionType.CUSTOM).size() >= 200) {
             throw new IllegalArgumentException("확장자의 개수가 200개를 넘었습니다.");
         }
         BlockedFileExtension addedExtension = new BlockedFileExtension(extension, ExtensionType.CUSTOM, true);
@@ -100,8 +100,8 @@ public class FileExtensionService {
      *         </ul>
      * */
     public FileExtensions getExtensions() {
-        List<BlockedFileExtension> fixedEntities = blockedFileExtensionRepository.findByExtensionType(ExtensionType.FIX);
-        List<BlockedFileExtension> customEntities = blockedFileExtensionRepository.findByExtensionType(ExtensionType.CUSTOM);
+        List<BlockedFileExtension> fixedEntities = blockedFileExtensionRepository.findByExtensionTypeOrderByIdAsc(ExtensionType.FIX);
+        List<BlockedFileExtension> customEntities = blockedFileExtensionRepository.findByExtensionTypeOrderByIdAsc(ExtensionType.CUSTOM);
 
         List<FixExtension> fixExtensions = fixedEntities.stream()
                 .map(entity -> new FixExtension(entity.getExtension(), entity.isBlocked()))
@@ -145,7 +145,7 @@ public class FileExtensionService {
     public void updateFixExtensions() {
         List<String> newFixExtensions = extensionFrequencyRepository.findTop7ByOrderByAddedCountDesc()
                 .stream().map(ExtensionFrequency::getExtension).toList();
-        List<String> currFixExtensions = blockedFileExtensionRepository.findByExtensionType(ExtensionType.FIX)
+        List<String> currFixExtensions = blockedFileExtensionRepository.findByExtensionTypeOrderByIdAsc(ExtensionType.FIX)
                 .stream().map(BlockedFileExtension::getExtension).toList();
 
         // 기존과 새로 선정된 확장자의 겹치는 개수
