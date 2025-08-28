@@ -30,9 +30,11 @@ public class FileExtensionServiceTest {
     void setUp() {
         fileExtensionService = new FileExtensionService(blockedFileExtensionRepository, extensionFrequencyRepository);
 
-        // 기존 데이터 삭제
+        // 기존 데이터 삭제 후 flush
         blockedFileExtensionRepository.deleteAll();
+        blockedFileExtensionRepository.flush();
         extensionFrequencyRepository.deleteAll();
+        extensionFrequencyRepository.flush();
 
         // 초기 FIX 확장자 데이터: isBlocked true/false 섞음
         List<BlockedFileExtension> fixedExtensions = List.of(
@@ -45,7 +47,11 @@ public class FileExtensionServiceTest {
                 new BlockedFileExtension("js", ExtensionType.FIX, false),
                 new BlockedFileExtension("txt", ExtensionType.CUSTOM, true)
         );
-        blockedFileExtensionRepository.saveAll(fixedExtensions);
+
+        // 개별 save로 유니크 제약 안전하게 처리
+        for (BlockedFileExtension ext : fixedExtensions) {
+            blockedFileExtensionRepository.save(ext);
+        }
 
         // 초기 ExtensionFrequency 데이터
         List<ExtensionFrequency> frequencies = List.of(
@@ -62,8 +68,12 @@ public class FileExtensionServiceTest {
                 new ExtensionFrequency("txt", 50),
                 new ExtensionFrequency("doc", 40)
         );
-        extensionFrequencyRepository.saveAll(frequencies);
+
+        for (ExtensionFrequency freq : frequencies) {
+            extensionFrequencyRepository.save(freq);
+        }
     }
+
 
     @Test
     void 차단되지_않은_확장자는_허용한다() {

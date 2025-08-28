@@ -2,6 +2,7 @@ package com.example.blockfileextension.controller;
 
 import com.example.blockfileextension.domain.*;
 import com.example.blockfileextension.dto.CustomExtension;
+import com.example.blockfileextension.dto.FileValidationRequest;
 import com.example.blockfileextension.dto.FixExtension;
 import com.example.blockfileextension.service.FileExtensionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -128,20 +129,22 @@ public class FileExtensionControllerTest {
 
     @Test
     void 차단된_확장자면_파일_업로드_실패() throws Exception {
-        MockMultipartFile blockedFile =
-                new MockMultipartFile("file", "virus.cmd", "application/octet-stream", "dummy".getBytes());
+        FileValidationRequest request = new FileValidationRequest("virus.cmd");
 
-        mvc.perform(multipart("/files").file(blockedFile))
+        mvc.perform(post("/files/check")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("BLOCKED"));
     }
 
     @Test
     void 차단되지_않은_확장자면_파일_업로드_성공() throws Exception {
-        MockMultipartFile blockedFile =
-                new MockMultipartFile("file", "safe.exe", "application/octet-stream", "dummy".getBytes());
+        FileValidationRequest request = new FileValidationRequest("safe.exe");
 
-        mvc.perform(multipart("/files").file(blockedFile))
+        mvc.perform(post("/files/check")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("ALLOWED"));
     }
@@ -151,10 +154,11 @@ public class FileExtensionControllerTest {
         // 테스트용 이중 확장자 추가
         BlockedFileExtension addedExtension = fileExtensionService.addCustomExtension("tar.gz");
 
-        MockMultipartFile blockedFile =
-                new MockMultipartFile("file", "virus.tar.gz", "application/octet-stream", "dummy".getBytes());
+        FileValidationRequest request = new FileValidationRequest("test.tar.gz");
 
-        mvc.perform(multipart("/files").file(blockedFile))
+        mvc.perform(post("/files/check")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("BLOCKED"));
     }
