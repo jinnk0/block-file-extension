@@ -5,6 +5,7 @@ import com.example.blockfileextension.dto.FileExtensions;
 import com.example.blockfileextension.dto.FileValidationResponse;
 import com.example.blockfileextension.dto.FixExtension;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,7 +53,11 @@ public class FileExtensionService {
         }
         BlockedFileExtension addedExtension = new BlockedFileExtension(extension, ExtensionType.CUSTOM, true);
         addCount(extension);
-        return blockedFileExtensionRepository.save(addedExtension);
+        try {
+            return blockedFileExtensionRepository.save(addedExtension);
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalArgumentException("이미 존재하는 확장자입니다.");
+        }
     }
 
     /**
