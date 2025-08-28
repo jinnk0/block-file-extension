@@ -42,6 +42,7 @@ public class FileExtensionService {
      * @throws IllegalArgumentException 중복 추가, 입력 제한 조건 초과
      * */
     public BlockedFileExtension addCustomExtension(String extension) {
+        extension = extension.toLowerCase();
         if (blockedFileExtensionRepository.existsByExtension(extension)) {
             throw new IllegalArgumentException("이미 존재하는 확장자입니다.");
         }
